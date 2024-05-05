@@ -63,11 +63,14 @@ const fetchAndInsert = async () => {
 fetchAndInsert()
 
 app.get('/', async (request, response) => {
-  const {offset,limit,search_q} = request.query;
+  const page = parseInt(request.query.page) || 1;
+    const perPage = parseInt(request.query.perPage) || 10;
+
+    const offset = (page - 1) * perPage;
+
     const getTaskQuery = `
         SELECT * FROM products
-        WHERE title LIKE "%{search_q}%"
-        LIMIT ${limit} OFFSET ${offset};
+        LIMIT ${perPage} OFFSET ${offset};
     `;
   const tasksQuery = await db.all(getTaskQuery)
   response.send(tasksQuery)
