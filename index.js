@@ -63,9 +63,10 @@ const fetchAndInsert = async () => {
 fetchAndInsert()
 
 app.get('/', async (request, response) => {
+  const {offset,limit} = request.query;
     const getTaskQuery = `
         SELECT * FROM products
-        LIMIT ${} OFFSET ${};
+        LIMIT ${limit} OFFSET ${offset};
     `;
   const tasksQuery = await db.all(getTaskQuery)
   response.send(tasksQuery)
