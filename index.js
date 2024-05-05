@@ -63,15 +63,9 @@ const fetchAndInsert = async () => {
 fetchAndInsert()
 
 app.get('/', async (request, response) => {
-  
-  const page = parseInt(request.query.page);
-    const perPage = parseInt(request.query.perPage);
-
-    const offset = (page - 1) * perPage;
-
     const getTaskQuery = `
         SELECT * FROM products
-        LIMIT ${perPage} OFFSET ${offset};
+        LIMIT ${} OFFSET ${};
     `;
   const tasksQuery = await db.all(getTaskQuery)
   response.send(tasksQuery)
