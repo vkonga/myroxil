@@ -64,8 +64,8 @@ fetchAndInsert()
 
 app.get('/', async (request, response) => {
   
-  const page = parseInt(request.query.page) || 1;
-    const perPage = parseInt(request.query.perPage) || 10;
+  const page = parseInt(request.query.page);
+    const perPage = parseInt(request.query.perPage);
 
     const offset = (page - 1) * perPage;
 
