@@ -62,7 +62,7 @@ const fetchAndInsert = async () => {
 
 fetchAndInsert()
 
-app.get('/products/', async (request, response) => {
+app.get('/', async (request, response) => {
   
   const page = parseInt(request.query.page) || 1;
     const perPage = parseInt(request.query.perPage) || 10;
