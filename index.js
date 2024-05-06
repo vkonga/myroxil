@@ -77,7 +77,7 @@ app.get('/', async (request, response) => {
 
 })
 
-app.get('/products/:month', async (request, response) => {
+app.get('/products/', async (request, response) => {
   const { month } = request.params;
 
   // Query to get total sale amount of selected month
@@ -125,7 +125,7 @@ app.get('/products/:month', async (request, response) => {
 });
 
 
-app.get("/product-range/:month", async (request, response) => {
+app.get("/product-range/", async (request, response) => {
   const { month } = request.params;
   const getPriceRangeQuery = `
   SELECT 
@@ -156,7 +156,7 @@ app.get("/product-range/:month", async (request, response) => {
   response.send(categorizedPrices);
 });
 
-app.get("/product-category/:month", async (request,response) => {
+app.get("/product-category/", async (request,response) => {
   const { month } = request.params;
   const getQuery = `
     SELECT category FROM products
