@@ -62,29 +62,50 @@ const fetchAndInsert = async () => {
 
 fetchAndInsert()
 
-app.get('/', async (request, response) => {
-  const page = parseInt(request.query.page) || 1;
-    const perPage = parseInt(request.query.perPage) || 10;
+app.get('/', async (request, response) => { const { month = "", s_query = "", limit = 10, offset = 0 } = req.query;
+    const searchQuery = `
+    SELECT * FROM ProductData
+    WHERE
+    (title LIKE ? OR description LIKE ? OR price LIKE ?)
+    AND strftime('%m', dateOfSale) LIKE ?
+    LIMIT ? OFFSET ?;`;
 
-    const offset = (page - 1) * perPage;
+    const params = [
+        `%${s_query}`,
+        `%${s_query}`,
+        `%${s_query}`,
+        `%${month}`,
+        limit,
+        offset,
+    ];
 
-    const getTaskQuery = `
-        SELECT * FROM products
-        LIMIT ${perPage} OFFSET ${offset};
-    `;
-  const tasksQuery = await db.all(getTaskQuery)
-  response.send(tasksQuery)
+    const totalItemQuery = `SELECT COUNT(id) AS total
+    FROM ProductData
+    WHERE
+    (title LIKE ? OR description LIKE ? OR price LIKE ?)
+    AND strftime('%m', dateOfSale) LIKE ?;`;
+
+    const totalparams = [
+        `%${s_query}`,
+        `%${s_query}`,
+        `%${s_query}`,
+        `%${month}`,
+    ];
+
+    const data = await db.all(searchQuery, params);
+    const total = await db.get(totalItemQuery, totalparams);
+    res.send({ transactionsData: data, total })
 
 })
 
 app.get('/products/', async (request, response) => {
-  const { month } = request.params;
+  const { month = ""} = request.query;
 
   // Query to get total sale amount of selected month
   const getTotalSaleAmountQuery = `
       SELECT SUM(price) AS totalSaleAmount
       FROM products
-      WHERE strftime("%m", dateOfSale) = '${month}';
+      WHERE  strftime("%m", dateOfSale) = '%${month}';
   `;
 
   // Query to get total number of sold items of selected month
@@ -92,7 +113,7 @@ app.get('/products/', async (request, response) => {
       SELECT COUNT(*) AS totalSoldItems
       FROM products
       WHERE sold = 1
-      AND strftime("%m", dateOfSale) = '${month}';
+      AND strftime("%m", dateOfSale) = '%${month}';
   `;
 
   // Query to get total number of unsold items of selected month
@@ -100,7 +121,7 @@ app.get('/products/', async (request, response) => {
       SELECT COUNT(*) AS totalUnsoldItems
       FROM products
       WHERE sold = 0
-      AND strftime("%m", dateOfSale) = '${month}';
+      AND strftime("%m", dateOfSale) = '%${month}';
       ;
   `;
 
@@ -126,7 +147,7 @@ app.get('/products/', async (request, response) => {
 
 
 app.get("/product-range/", async (request, response) => {
-  const { month } = request.params;
+  const { month = "" } = request.query;
   const getPriceRangeQuery = `
   SELECT 
   price
