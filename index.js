@@ -154,7 +154,7 @@ app.get("/product-range/", async (request, response) => {
   FROM
   products
   WHERE 
-     strftime("%m",dateOfSale) = "${month}";
+     strftime("%m",dateOfSale) = "%${month}";
   `;
 
   const priceRange = await db.all(getPriceRangeQuery);
@@ -181,7 +181,7 @@ app.get("/product-category/", async (request,response) => {
   const { month } = request.params;
   const getQuery = `
     SELECT category FROM products
-    WHERE strftime("%m",dateOfSale) = "${month}";
+    WHERE strftime("%m",dateOfSale) = "%${month}";
   `;
 
   const categoryProduct = await db.all(getQuery);
