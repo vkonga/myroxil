@@ -62,9 +62,9 @@ const fetchAndInsert = async () => {
 
 fetchAndInsert()
 
-app.get('/transactions', async (req, res) => {
-    const { month = "", s_query = "", limit = 10, offset = 0 } = req.query;
-    const searchQuery = `
+app.get('/', async (request, response) => {
+    const { month = "", s_query = "", limit = 10, offset = 0 } = request.query;
+    const getQuery = `
     SELECT * FROM products
     WHERE
     (title LIKE ? OR description LIKE ? OR price LIKE ?)
@@ -80,27 +80,27 @@ app.get('/transactions', async (req, res) => {
         offset,
     ];
 
-    const totalItemQuery = `SELECT COUNT(id) AS total
+    const getSalesQuery = `SELECT COUNT(id) AS total
     FROM products
     WHERE
     (title LIKE ? OR description LIKE ? OR price LIKE ?)
     AND strftime('%m', dateOfSale) LIKE ?;`;
 
-    const totalparams = [
+    const salesparams = [
         `%${s_query}`,
         `%${s_query}`,
         `%${s_query}`,
         `%${month}`,
     ];
 
-    const data = await db.all(searchQuery, params);
-    const total = await db.get(totalItemQuery, totalparams);
-    res.json({ transactionsData: data, total })
+    const data = await db.all(getQuery, params);
+    const total = await db.get(getSalesQuery, salesparams);
+    response.send({ transactionsList: data, total })
 });
 
-app.get('/statistics', async (req, res) => {
-    const { month = "" } = req.query;
-    const totalAmount = await db.get(
+app.get('/statistics', async (request, response) => {
+    const { month = "" } = requset.query;
+    const totalSalesAmount = await db.get(
         `SELECT SUM(price) as total FROM products WHERE strftime('%m', dateOfSale) LIKE '%${month}';`
     )
 
@@ -112,12 +112,12 @@ app.get('/statistics', async (req, res) => {
         `SELECT COUNT(id) as notSold FROM products WHERE strftime('%m', dateOfSale) LIKE '%${month}' AND sold=0;`
     )
 
-    res.json({ totalAmount, soldItems, notSoldItems })
+    response.send({ totalSalesAmount, soldItems, notSoldItems })
 
 });
 
-app.get('/bar-chart', async (req, res) => {
-    const { month = '' } = req.query;
+app.get('/barChart', async (request, response) => {
+    const { month = '' } = request.query;
     const priceRange = [
         { min: 0, max: 100 },
         { min: 101, max: 200 },
@@ -131,7 +131,7 @@ app.get('/bar-chart', async (req, res) => {
         { min: 901, max: 10000 },
     ];
 
-    const barChartData = [];
+    const barChartList = [];
 
     for (const range of priceRange) {
         const data = await db.get(
@@ -139,58 +139,58 @@ app.get('/bar-chart', async (req, res) => {
             WHERE strftime('%m', dateOfSale) LIKE '%${month}%' AND price  >= ${range.min} AND price <=${range.max}; `
         );
 
-        barChartData.push({
+        barChartList.push({
             range: `${range.min} - ${range.max}`,
             count: data.count,
         });
     }
 
-    res.json({ barChartData });
+    response.send({ barChartList });
 });
 
-app.get('/pie-chart', async (req, res) => {
-    const { month = '' } = req.query;
-    const piechartData = await db.all(
+app.get('/pieChart', async (request, response) => {
+    const { month = '' } = request.query;
+    const piechartList = await db.all(
         `SELECT category, COUNT(id) as count FROM products
         WHERE strftime('%m', dateOfSale) Like '%${month}'
         GROUP BY category;`
     );
 
-    res.json({ piechartData })
+    response.send({ piechartList })
 });
 
 
-app.get("/combined-response", async (req, res) => {
-    const { month = "", s_query = "", limit = 10, offset = 0 } = req.query;
+app.get("/combinedResponse", async (request, response) => {
+    const { month = "", s_query = "", limit = 10, offset = 0 } = request.query;
 
     const initializeDatabase = await axios.get(
         `https://roxiler-systems-assignment.onrender.com/initialize-database`
     );
     const initializeResponse = await initializeDatabase.data;
-    const TransactionsData = await axios.get(
+    const TransactionsList = await axios.get(
         `https://roxiler-systems-assignment.onrender.com/transactions?month=${month}&s_query=${s_query}&limit=${limit}&offset=${offset}`
     );
-    const TransactionsResponse = await TransactionsData.data;
-    const statisticsData = await axios.get(
+    const TransactionsResponse = await TransactionsList.data;
+    const statisticsList = await axios.get(
         `https://roxiler-systems-assignment.onrender.com/statistics?month=${month}`
     );
-    const statisticsResponse = await statisticsData.data;
+    const statisticsResponse = await statisticsList.data;
     const barChartResponse = await axios.get(
         `https://roxiler-systems-assignment.onrender.com/bar-chart?month=${month}`
     );
-    const barChartData = await barChartResponse.data;
+    const barChartList = await barChartResponse.data;
     const pieChartResponse = await axios.get(
         `https://roxiler-systems-assignment.onrender.com/pie-chart?month=${month}`
     );
-    const pieChartData = await pieChartResponse.data;
+    const pieChartList = await pieChartResponse.data;
 
     const combinedResponse = {
         initialize: initializeResponse,
         listTransactions: TransactionsResponse,
         statistics: statisticsResponse,
-        barChart: barChartData,
-        pieChart: pieChartData,
+        barChart: barChartList,
+        pieChart: pieChartList,
     };
 
-    res.json(combinedResponse);
+    response.send(combinedResponse);
 });
