@@ -160,14 +160,14 @@ app.get('/pieChart', async (request, response) => {
 });
 
 
-app.get('/combined', async (req, res) => {
+app.get('/combined', async (request, response) => {
   
       const { month = "" } = req.query;
 
       // Fetch data for each API endpoint
-      const monthsData = await axios.get(`http://localhost:3000/months/?month=${month}`);
-      const barchartData = await axios.get(`http://localhost:3000/barchart/?month=${month}`);
-      const piechartData = await axios.get(`http://localhost:3000/piechart/?month=${month}`);
+      const monthsData = await axios.get(`https://myroxil-8.onrender.com/?month=${month}`);
+      const barchartData = await axios.get(`https://myroxil-8.onrender.com/?month=${month}`);
+      const piechartData = await axios.get(`https://myroxil-8.onrender.com/?month=${month}`);
 
       // Extract data from each response
       const months = monthsData.data;
@@ -182,5 +182,5 @@ app.get('/combined', async (req, res) => {
       };
 
       // Send the combined data as the response
-      res.json(combinedData);
+      response.send(combinedData);
 });
