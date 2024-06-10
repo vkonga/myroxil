@@ -160,37 +160,27 @@ app.get('/pieChart', async (request, response) => {
 });
 
 
-app.get("/combinedResponse", async (request, response) => {
-    const { month = "", s_query = "", limit = 10, offset = 0 } = request.query;
+app.get('/combined', async (req, res) => {
+  
+      const { month = "" } = req.query;
 
-    const initializeDatabase = await axios.get(
-        `https://roxiler-systems-assignment.onrender.com/initialize-database`
-    );
-    const initializeResponse = await initializeDatabase.data;
-    const TransactionsList = await axios.get(
-        `https://roxiler-systems-assignment.onrender.com/transactions?month=${month}&s_query=${s_query}&limit=${limit}&offset=${offset}`
-    );
-    const TransactionsResponse = await TransactionsList.data;
-    const statisticsList = await axios.get(
-        `https://roxiler-systems-assignment.onrender.com/statistics?month=${month}`
-    );
-    const statisticsResponse = await statisticsList.data;
-    const barChartResponse = await axios.get(
-        `https://roxiler-systems-assignment.onrender.com/bar-chart?month=${month}`
-    );
-    const barChartList = await barChartResponse.data;
-    const pieChartResponse = await axios.get(
-        `https://roxiler-systems-assignment.onrender.com/pie-chart?month=${month}`
-    );
-    const pieChartList = await pieChartResponse.data;
+      // Fetch data for each API endpoint
+      const monthsData = await axios.get(`http://localhost:3000/months/?month=${month}`);
+      const barchartData = await axios.get(`http://localhost:3000/barchart/?month=${month}`);
+      const piechartData = await axios.get(`http://localhost:3000/piechart/?month=${month}`);
 
-    const combinedResponse = {
-        initialize: initializeResponse,
-        listTransactions: TransactionsResponse,
-        statistics: statisticsResponse,
-        barChart: barChartList,
-        pieChart: pieChartList,
-    };
+      // Extract data from each response
+      const months = monthsData.data;
+      const barchart = barchartData.data;
+      const piechart = piechartData.data;
 
-    response.send(combinedResponse);
+      // Combine data from all three endpoints
+      const combinedData = {
+          months,
+          barchart,
+          piechart
+      };
+
+      // Send the combined data as the response
+      res.json(combinedData);
 });
